@@ -72,5 +72,18 @@ class FirebaseRepository {
                 }
             }
 
+    fun listenForIncomingCalls(myUid: String, onIncomingCall: (CallSession) -> Unit) =
+        callsCollection
+            .whereEqualTo("calleeUid", myUid)
+            .whereEqualTo("status", CallSession.STATUS_RINGING)
+            .addSnapshotListener { snapshot, _ ->
+                snapshot?.documentChanges?.forEach { change ->
+                    if (change.type.name == "ADDED") {
+                        change.document.toObject(CallSession::class.java)
+                            .let(onIncomingCall)
+                    }
+                }
+            }
+
     fun getUserRef() = usersCollection
 }
