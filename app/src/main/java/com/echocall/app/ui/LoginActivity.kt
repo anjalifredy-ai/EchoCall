@@ -1,6 +1,7 @@
 package com.echocall.app.ui
 
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -8,12 +9,15 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.echocall.app.R
 import com.echocall.app.data.model.User
 import com.echocall.app.data.repository.AuthRepository
 import com.echocall.app.data.repository.FirebaseRepository
 import com.echocall.app.util.PhoneNumberUtil
+import com.echocall.app.util.SmsBroadcastReceiver
+import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.google.firebase.auth.PhoneAuthCredential
 import kotlinx.coroutines.launch
 
@@ -28,6 +32,8 @@ class LoginActivity : AppCompatActivity() {
     private val authRepository = AuthRepository()
     private val firebaseRepository = FirebaseRepository()
     private var normalizedPhone: String = ""
+
+    private val smsReceiver = SmsBroadcastReceiver()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,8 +50,31 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
+        smsReceiver.otpListener = { otp ->
+            runOnUiThread {
+                etOtp.setText(otp)
+                verifyOtp()
+            }
+        }
+
         btnSendOtp.setOnClickListener { sendOtp() }
         btnVerifyOtp.setOnClickListener { verifyOtp() }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
+        ContextCompat.registerReceiver(
+            this, smsReceiver, filter, ContextCompat.RECEIVER_EXPORTED
+        )
+    }
+
+    override fun onStop() {
+        super.onStop()
+        try {
+            unregisterReceiver(smsReceiver)
+        } catch (_: Exception) {
+        }
     }
 
     private fun sendOtp() {
@@ -57,6 +86,8 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
+        authRepository.startSmsRetriever(this)
+
         setLoading(true)
         authRepository.sendOtp(
             phoneNumber = normalizedPhone,
@@ -65,7 +96,7 @@ class LoginActivity : AppCompatActivity() {
                 setLoading(false)
                 etOtp.visibility = View.VISIBLE
                 btnVerifyOtp.visibility = View.VISIBLE
-                Toast.makeText(this, "OTP sent", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "OTP sent, waiting for auto-detect...", Toast.LENGTH_SHORT).show()
             },
             onVerificationFailed = { error ->
                 setLoading(false)
