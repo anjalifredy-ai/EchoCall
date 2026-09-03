@@ -1,6 +1,8 @@
 package com.echocall.app.data.repository
 
 import android.app.Activity
+import android.content.Context
+import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
@@ -15,6 +17,11 @@ class AuthRepository {
     private var resendToken: PhoneAuthProvider.ForceResendingToken? = null
 
     fun currentUser() = auth.currentUser
+
+    fun startSmsRetriever(context: Context) {
+        val client = SmsRetriever.getClient(context)
+        client.startSmsRetriever()
+    }
 
     fun sendOtp(
         phoneNumber: String,
