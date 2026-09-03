@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -30,6 +31,9 @@ class CallActivity : AppCompatActivity(), WebRtcClient.Listener {
     private lateinit var tvCallStatus: TextView
     private lateinit var btnMic: ImageButton
     private lateinit var btnSpeaker: ImageButton
+    private lateinit var btnVideo: ImageButton
+    private lateinit var btnMore: ImageButton
+    private lateinit var btnKeypad: ImageButton
     private lateinit var btnEndCall: ImageButton
 
     private lateinit var webRtcClient: WebRtcClient
@@ -74,6 +78,9 @@ class CallActivity : AppCompatActivity(), WebRtcClient.Listener {
         tvCallStatus = findViewById(R.id.tvCallStatus)
         btnMic = findViewById(R.id.btnMic)
         btnSpeaker = findViewById(R.id.btnSpeaker)
+        btnVideo = findViewById(R.id.btnVideo)
+        btnMore = findViewById(R.id.btnMore)
+        btnKeypad = findViewById(R.id.btnKeypad)
         btnEndCall = findViewById(R.id.btnEndCall)
 
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
@@ -88,6 +95,15 @@ class CallActivity : AppCompatActivity(), WebRtcClient.Listener {
 
         btnMic.setOnClickListener { toggleMic() }
         btnSpeaker.setOnClickListener { toggleSpeaker() }
+        btnVideo.setOnClickListener {
+            Toast.makeText(this, "Video calling coming soon", Toast.LENGTH_SHORT).show()
+        }
+        btnMore.setOnClickListener {
+            Toast.makeText(this, "More options coming soon", Toast.LENGTH_SHORT).show()
+        }
+        btnKeypad.setOnClickListener {
+            Toast.makeText(this, "Keypad coming soon", Toast.LENGTH_SHORT).show()
+        }
         btnEndCall.setOnClickListener { endCall() }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
