@@ -4,73 +4,201 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_dark">
-
-    <TextView
-        android:id="@+id/tvCallerName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:textColor="@color/white"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:text="John Doe" />
+    android:background="@drawable/bg_call_gradient">
 
     <TextView
         android:id="@+id/tvCallStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="70dp"
         android:text="Connecting..."
-        android:textColor="#AAAAAA"
-        android:textSize="15sp"
-        app:layout_constraintTop_toBottomOf="@id/tvCallerName"
+        android:textColor="#DDDDDD"
+        android:textSize="16sp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/controlsRow"
+    <TextView
+        android:id="@+id/tvCallerName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="60dp"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/white"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/tvCallStatus"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="John Doe" />
+
+    <LinearLayout
+        android:id="@+id/rowTop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@id/btnEndCall"
+        android:weightSum="3"
+        app:layout_constraintBottom_toTopOf="@id/rowBottom"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageButton
-            android:id="@+id/btnMic"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginEnd="24dp"
-            android:background="@drawable/bg_circle_surface"
-            android:contentDescription="Mute"
-            android:src="@android:drawable/ic_btn_speak_now" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
 
-        <ImageButton
-            android:id="@+id/btnSpeaker"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginStart="24dp"
-            android:background="@drawable/bg_circle_surface"
-            android:contentDescription="Speaker"
-            android:src="@android:drawable/ic_lock_silent_mode_off" />
+            <ImageButton
+                android:id="@+id/btnSpeaker"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_circle_translucent"
+                android:contentDescription="Speaker"
+                android:src="@android:drawable/ic_lock_silent_mode_off" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Speaker"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnVideo"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_circle_translucent"
+                android:contentDescription="Video"
+                android:src="@android:drawable/ic_menu_camera" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Video"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnMic"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_circle_translucent"
+                android:contentDescription="Mute"
+                android:src="@android:drawable/ic_btn_speak_now" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Mute"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
 
     </LinearLayout>
 
-    <ImageButton
-        android:id="@+id/btnEndCall"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:layout_marginBottom="60dp"
-        android:background="@drawable/bg_circle_red"
-        android:contentDescription="End call"
-        android:src="@android:drawable/ic_menu_close_clear_cancel"
+    <LinearLayout
+        android:id="@+id/rowBottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="50dp"
+        android:orientation="horizontal"
+        android:weightSum="3"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnMore"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_circle_translucent"
+                android:contentDescription="More"
+                android:src="@android:drawable/ic_menu_more" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="More"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnEndCall"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_circle_red"
+                android:contentDescription="End call"
+                android:src="@android:drawable/ic_menu_close_clear_cancel" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="End"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnKeypad"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_circle_translucent"
+                android:contentDescription="Keypad"
+                android:src="@android:drawable/ic_dialog_dialer" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Keypad"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
