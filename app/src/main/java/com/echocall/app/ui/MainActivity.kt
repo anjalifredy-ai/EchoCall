@@ -21,9 +21,11 @@ import com.echocall.app.data.repository.AuthRepository
 import com.echocall.app.data.repository.ContactRepository
 import com.echocall.app.data.repository.FirebaseRepository
 import com.echocall.app.ui.adapter.ContactAdapter
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var rvContacts: RecyclerView
     private lateinit var tvEmpty: TextView
     private lateinit var fabAddContact: FloatingActionButton
+    private lateinit var bottomNav: BottomNavigationView
     private lateinit var adapter: ContactAdapter
 
     private lateinit var contactRepository: ContactRepository
@@ -38,6 +41,8 @@ class MainActivity : AppCompatActivity() {
     private val authRepository = AuthRepository()
     private var incomingCallListener: ListenerRegistration? = null
     private var pendingCallNumber: String? = null
+    private var currentTab = TAB_DIAL
+    private var contactsJob: Job? = null
 
     private val requestContactsPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -69,10 +74,12 @@ class MainActivity : AppCompatActivity() {
         rvContacts = findViewById(R.id.rvContacts)
         tvEmpty = findViewById(R.id.tvEmpty)
         fabAddContact = findViewById(R.id.fabAddContact)
+        bottomNav = findViewById(R.id.bottomNav)
 
         adapter = ContactAdapter(
             onCallClick = { contact -> startCall(contact) },
-            onItemClick = { contact -> startCall(contact) }
+            onItemClick = { contact -> startCall(contact) },
+            onFavouriteToggle = { contact -> toggleFavourite(contact) }
         )
         rvContacts.layoutManager = LinearLayoutManager(this)
         rvContacts.adapter = adapter
@@ -81,7 +88,16 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, AddContactActivity::class.java))
         }
 
-        observeContacts()
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_dial -> switchTab(TAB_DIAL)
+                R.id.nav_contacts -> switchTab(TAB_CONTACTS)
+                R.id.nav_favourites -> switchTab(TAB_FAVOURITES)
+            }
+            true
+        }
+
+        switchTab(TAB_DIAL)
         updateFcmToken()
         checkContactsPermission()
     }
@@ -95,6 +111,24 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
         incomingCallListener?.remove()
         incomingCallListener = null
+    }
+
+    private fun switchTab(tab: Int) {
+        currentTab = tab
+        contactsJob?.cancel()
+
+        val flow = when (tab) {
+            TAB_FAVOURITES -> contactRepository.getFavouriteContacts()
+            else -> contactRepository.getAllContacts()
+        }
+
+        contactsJob = lifecycleScope.launch {
+            flow.collect { contacts ->
+                adapter.submitList(contacts)
+                tvEmpty.visibility = if (contacts.isEmpty()) View.VISIBLE else View.GONE
+                tvEmpty.text = if (tab == TAB_FAVOURITES) "No favourites yet" else "No contacts yet"
+            }
+        }
     }
 
     private fun startListeningForIncomingCalls() {
@@ -116,11 +150,11 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun observeContacts() {
+    private fun toggleFavourite(contact: Contact) {
         lifecycleScope.launch {
-            contactRepository.getAllContacts().collect { contacts ->
-                adapter.submitList(contacts)
-                tvEmpty.visibility = if (contacts.isEmpty()) View.VISIBLE else View.GONE
+            try {
+                contactRepository.toggleFavourite(contact)
+            } catch (_: Exception) {
             }
         }
     }
@@ -216,5 +250,11 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Toast.makeText(this, "Unable to place call", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    companion object {
+        const val TAB_DIAL = 0
+        const val TAB_CONTACTS = 1
+        const val TAB_FAVOURITES = 2
     }
 }
