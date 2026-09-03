@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_dial"
+        android:icon="@android:drawable/ic_dialog_dialer"
+        android:title="Dial" />
+    <item
+        android:id="@+id/nav_contacts"
+        android:icon="@android:drawable/ic_menu_call"
+        android:title="Contacts" />
+    <item
+        android:id="@+id/nav_favourites"
+        android:icon="@android:drawable/btn_star_big_on"
+        android:title="Favorites" />
+</menu>
