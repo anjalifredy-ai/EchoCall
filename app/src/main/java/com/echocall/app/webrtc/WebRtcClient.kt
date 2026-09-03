@@ -3,8 +3,6 @@ package com.echocall.app.webrtc
 import android.content.Context
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
-import org.webrtc.Camera2Enumerator
-import org.webrtc.CameraVideoCapturer
 import org.webrtc.DefaultVideoDecoderFactory
 import org.webrtc.DefaultVideoEncoderFactory
 import org.webrtc.EglBase
@@ -15,7 +13,6 @@ import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
-import org.webrtc.SurfaceTextureHelper
 
 class WebRtcClient(
     private val context: Context,
@@ -106,26 +103,34 @@ class WebRtcClient(
 
     fun createOffer(onSuccess: (SessionDescription) -> Unit) {
         val constraints = MediaConstraints()
-        peerConnection?.createOffer(object : SdpObserverAdapter() {
-            override fun onCreateSuccess(sdp: SessionDescription) {
-                peerConnection?.setLocalDescription(SdpObserverAdapter(), sdp)
+        peerConnection?.createOffer(object : SdpObserver {
+            override fun onCreateSuccess(sdp: SessionDescription?) {
+                if (sdp == null) return
+                peerConnection?.setLocalDescription(SilentSdpObserver(), sdp)
                 onSuccess(sdp)
             }
+            override fun onSetSuccess() {}
+            override fun onCreateFailure(error: String?) {}
+            override fun onSetFailure(error: String?) {}
         }, constraints)
     }
 
     fun createAnswer(onSuccess: (SessionDescription) -> Unit) {
         val constraints = MediaConstraints()
-        peerConnection?.createAnswer(object : SdpObserverAdapter() {
-            override fun onCreateSuccess(sdp: SessionDescription) {
-                peerConnection?.setLocalDescription(SdpObserverAdapter(), sdp)
+        peerConnection?.createAnswer(object : SdpObserver {
+            override fun onCreateSuccess(sdp: SessionDescription?) {
+                if (sdp == null) return
+                peerConnection?.setLocalDescription(SilentSdpObserver(), sdp)
                 onSuccess(sdp)
             }
+            override fun onSetSuccess() {}
+            override fun onCreateFailure(error: String?) {}
+            override fun onSetFailure(error: String?) {}
         }, constraints)
     }
 
     fun setRemoteDescription(sdp: SessionDescription) {
-        peerConnection?.setRemoteDescription(SdpObserverAdapter(), sdp)
+        peerConnection?.setRemoteDescription(SilentSdpObserver(), sdp)
     }
 
     fun addIceCandidate(candidate: IceCandidate) {
@@ -146,7 +151,7 @@ class WebRtcClient(
         }
     }
 
-    open class SdpObserverAdapter : SdpObserver {
+    private class SilentSdpObserver : SdpObserver {
         override fun onCreateSuccess(sdp: SessionDescription?) {}
         override fun onSetSuccess() {}
         override fun onCreateFailure(error: String?) {}
