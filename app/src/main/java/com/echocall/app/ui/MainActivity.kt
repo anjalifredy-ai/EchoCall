@@ -3,6 +3,7 @@ package com.echocall.app.ui
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -36,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private val firebaseRepository = FirebaseRepository()
     private val authRepository = AuthRepository()
     private var incomingCallListener: ListenerRegistration? = null
+    private var pendingCallNumber: String? = null
 
     private val requestContactsPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -45,6 +47,17 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "Contacts permission needed to find your friends", Toast.LENGTH_LONG).show()
         }
+    }
+
+    private val requestCallPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            pendingCallNumber?.let { dialSimCall(it) }
+        } else {
+            Toast.makeText(this, "Call permission needed to dial", Toast.LENGTH_SHORT).show()
+        }
+        pendingCallNumber = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -168,16 +181,40 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startCall(contact: Contact) {
-        if (!contact.isAppUser || contact.appUid == null) {
-            Toast.makeText(this, "${contact.name} is not on EchoCall yet", Toast.LENGTH_SHORT).show()
-            return
+        if (contact.isAppUser && contact.appUid != null) {
+            val intent = Intent(this, CallActivity::class.java).apply {
+                putExtra("mode", "outgoing")
+                putExtra("calleeUid", contact.appUid)
+                putExtra("calleeName", contact.name)
+                putExtra("calleeNumber", contact.normalizedNumber)
+            }
+            startActivity(intent)
+        } else {
+            requestSimCall(contact.phoneNumber)
         }
-        val intent = Intent(this, CallActivity::class.java).apply {
-            putExtra("mode", "outgoing")
-            putExtra("calleeUid", contact.appUid)
-            putExtra("calleeName", contact.name)
-            putExtra("calleeNumber", contact.normalizedNumber)
+    }
+
+    private fun requestSimCall(phoneNumber: String) {
+        val granted = ContextCompat.checkSelfPermission(
+            this, Manifest.permission.CALL_PHONE
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (granted) {
+            dialSimCall(phoneNumber)
+        } else {
+            pendingCallNumber = phoneNumber
+            requestCallPermission.launch(Manifest.permission.CALL_PHONE)
         }
-        startActivity(intent)
+    }
+
+    private fun dialSimCall(phoneNumber: String) {
+        try {
+            val intent = Intent(Intent.ACTION_CALL).apply {
+                data = Uri.parse("tel:$phoneNumber")
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Unable to place call", Toast.LENGTH_SHORT).show()
+        }
     }
 }
