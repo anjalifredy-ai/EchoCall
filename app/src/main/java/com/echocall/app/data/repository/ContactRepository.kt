@@ -14,6 +14,8 @@ class ContactRepository(context: Context) {
 
     fun getAllContacts(): Flow<List<Contact>> = dao.getAllContacts()
 
+    fun getFavouriteContacts(): Flow<List<Contact>> = dao.getFavouriteContacts()
+
     suspend fun addContact(name: String, rawNumber: String): Long {
         val normalized = PhoneNumberUtil.normalize(rawNumber)
         val contact = Contact(
@@ -28,10 +30,10 @@ class ContactRepository(context: Context) {
 
     suspend fun deleteContact(contact: Contact) = dao.deleteContact(contact)
 
-    /**
-     * Reads device contacts (requires READ_CONTACTS permission already granted)
-     * and imports them into local Room DB, skipping self number.
-     */
+    suspend fun toggleFavourite(contact: Contact) {
+        dao.setFavourite(contact.id, !contact.isFavourite)
+    }
+
     suspend fun importDeviceContacts(selfNormalizedNumber: String?) {
         val resolver = appContext.contentResolver
         val cursor = resolver.query(
