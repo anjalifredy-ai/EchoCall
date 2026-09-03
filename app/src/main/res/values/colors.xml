@@ -1,11 +1,11 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="echo_purple">#5B2A86</color>
-    <color name="echo_pink">#E1306C</color>
-    <color name="echo_orange">#F77737</color>
-    <color name="call_green">#25D366</color>
+    <color name="echo_purple">#00C853</color>
+    <color name="echo_pink">#00E676</color>
+    <color name="echo_orange">#69F0AE</color>
+    <color name="call_green">#00C853</color>
     <color name="call_red">#FF3B30</color>
-    <color name="bg_dark">#121212</color>
-    <color name="surface_dark">#1E1E1E</color>
+    <color name="bg_dark">#0A0A0A</color>
+    <color name="surface_dark">#161616</color>
 </resources>
