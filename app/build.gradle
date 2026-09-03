@@ -52,7 +52,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore-ktx'
     implementation 'com.google.firebase:firebase-messaging-ktx'
     implementation 'com.google.firebase:firebase-auth-ktx'
-
+    implementation 'com.google.android.gms:play-services-auth-api-phone:18.1.0'
+    
     implementation 'io.getstream:stream-webrtc-android:1.1.1'
 
     implementation 'androidx.room:room-runtime:2.6.1'
