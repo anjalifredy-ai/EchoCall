@@ -11,5 +11,6 @@ data class Contact(
     val phoneNumber: String,
     val normalizedNumber: String,
     val isAppUser: Boolean = false,
-    val appUid: String? = null
+    val appUid: String? = null,
+    val isFavourite: Boolean = false
 )
