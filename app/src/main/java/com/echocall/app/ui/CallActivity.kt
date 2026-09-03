@@ -1,12 +1,16 @@
 package com.echocall.app.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.echocall.app.R
 import com.echocall.app.data.model.CallSession
@@ -19,10 +23,7 @@ import org.webrtc.IceCandidate
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
 import org.webrtc.SessionDescription
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+
 class CallActivity : AppCompatActivity(), WebRtcClient.Listener {
 
     private lateinit var tvCallerName: TextView
@@ -42,16 +43,7 @@ class CallActivity : AppCompatActivity(), WebRtcClient.Listener {
     private var isSpeakerOn = true
     private var callConnected = false
     private var secondsElapsed = 0
-    private val requestMicPermission = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
-            proceedWithCall()
-        } else {
-            tvCallStatus.text = "Microphone permission required"
-            handler.postDelayed({ finish() }, 1500)
-        }
-}
+
     private val handler = Handler(Looper.getMainLooper())
     private val timerRunnable = object : Runnable {
         override fun run() {
@@ -60,6 +52,17 @@ class CallActivity : AppCompatActivity(), WebRtcClient.Listener {
             val secs = secondsElapsed % 60
             tvCallStatus.text = String.format("%02d:%02d", mins, secs)
             handler.postDelayed(this, 1000)
+        }
+    }
+
+    private val requestMicPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            proceedWithCall()
+        } else {
+            tvCallStatus.text = "Microphone permission required"
+            handler.postDelayed({ finish() }, 1500)
         }
     }
 
@@ -83,12 +86,22 @@ class CallActivity : AppCompatActivity(), WebRtcClient.Listener {
             ?: "Unknown"
         tvCallerName.text = displayName
 
-        webRtcClient = WebRtcClient(this, this)
-        webRtcClient.initialize()
-
         btnMic.setOnClickListener { toggleMic() }
         btnSpeaker.setOnClickListener { toggleSpeaker() }
         btnEndCall.setOnClickListener { endCall() }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            proceedWithCall()
+        } else {
+            requestMicPermission.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    private fun proceedWithCall() {
+        webRtcClient = WebRtcClient(this, this)
+        webRtcClient.initialize()
 
         if (mode == "outgoing") {
             startOutgoingCall()
