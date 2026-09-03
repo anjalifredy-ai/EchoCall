@@ -19,7 +19,10 @@ import org.webrtc.IceCandidate
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
 import org.webrtc.SessionDescription
-
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 class CallActivity : AppCompatActivity(), WebRtcClient.Listener {
 
     private lateinit var tvCallerName: TextView
@@ -39,7 +42,16 @@ class CallActivity : AppCompatActivity(), WebRtcClient.Listener {
     private var isSpeakerOn = true
     private var callConnected = false
     private var secondsElapsed = 0
-
+    private val requestMicPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            proceedWithCall()
+        } else {
+            tvCallStatus.text = "Microphone permission required"
+            handler.postDelayed({ finish() }, 1500)
+        }
+}
     private val handler = Handler(Looper.getMainLooper())
     private val timerRunnable = object : Runnable {
         override fun run() {
