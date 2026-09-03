@@ -12,7 +12,8 @@ import com.echocall.app.data.local.Contact
 
 class ContactAdapter(
     private val onCallClick: (Contact) -> Unit,
-    private val onItemClick: (Contact) -> Unit
+    private val onItemClick: (Contact) -> Unit,
+    private val onFavouriteToggle: (Contact) -> Unit
 ) : ListAdapter<Contact, ContactAdapter.ContactViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
@@ -33,12 +34,14 @@ class ContactAdapter(
         fun bind(contact: Contact) {
             tvName.text = contact.name
             tvNumber.text = contact.phoneNumber
-            tvStatus.text = if (contact.isAppUser) "On EchoCall" else "Not on EchoCall"
-            tvStatus.visibility = if (contact.isAppUser) View.VISIBLE else View.GONE
+            val status = if (contact.isAppUser) "On EchoCall" else ""
+            val favMark = if (contact.isFavourite) "★ " else ""
+            tvStatus.text = favMark + status
+            tvStatus.visibility = if (contact.isAppUser || contact.isFavourite) View.VISIBLE else View.GONE
 
             itemView.setOnClickListener { onItemClick(contact) }
             itemView.setOnLongClickListener {
-                onCallClick(contact)
+                onFavouriteToggle(contact)
                 true
             }
         }
