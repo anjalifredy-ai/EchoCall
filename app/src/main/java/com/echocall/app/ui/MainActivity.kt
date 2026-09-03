@@ -106,11 +106,17 @@ class MainActivity : AppCompatActivity() {
     private fun matchContactsWithAppUsers() {
         lifecycleScope.launch {
             try {
-                val allContacts = mutableListOf<Contact>()
+                var numbers: List<String> = emptyList()
                 contactRepository.getAllContacts().collect { list ->
-                    allContacts.clear()
-                    allContacts.addAll(list)
+                    numbers = list.map { it.normalizedNumber }
                     return@collect
+                }
+                if (numbers.isEmpty()) return@launch
+
+                val matchedUsers = firebaseRepository.findUsersByNumbers(numbers)
+                val uidByNumber = matchedUsers.associate { it.phoneNumber to it.uid }
+                if (uidByNumber.isNotEmpty()) {
+                    contactRepository.markAsAppUsers(uidByNumber)
                 }
             } catch (_: Exception) {
             }
