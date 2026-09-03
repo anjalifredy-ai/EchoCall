@@ -14,6 +14,9 @@ interface ContactDao {
     @Query("SELECT * FROM contacts ORDER BY name ASC")
     fun getAllContacts(): Flow<List<Contact>>
 
+    @Query("SELECT * FROM contacts WHERE isFavourite = 1 ORDER BY name ASC")
+    fun getFavouriteContacts(): Flow<List<Contact>>
+
     @Query("SELECT * FROM contacts WHERE id = :id")
     suspend fun getContactById(id: Long): Contact?
 
@@ -34,4 +37,7 @@ interface ContactDao {
 
     @Query("DELETE FROM contacts WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("UPDATE contacts SET isFavourite = :isFavourite WHERE id = :id")
+    suspend fun setFavourite(id: Long, isFavourite: Boolean)
 }
