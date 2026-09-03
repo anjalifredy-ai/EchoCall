@@ -15,12 +15,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.echocall.app.R
 import com.echocall.app.data.local.Contact
+import com.echocall.app.data.model.CallSession
 import com.echocall.app.data.repository.AuthRepository
 import com.echocall.app.data.repository.ContactRepository
 import com.echocall.app.data.repository.FirebaseRepository
-import com.echocall.app.util.PhoneNumberUtil
 import com.echocall.app.ui.adapter.ContactAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var contactRepository: ContactRepository
     private val firebaseRepository = FirebaseRepository()
     private val authRepository = AuthRepository()
+    private var incomingCallListener: ListenerRegistration? = null
 
     private val requestContactsPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -69,6 +71,36 @@ class MainActivity : AppCompatActivity() {
         observeContacts()
         updateFcmToken()
         checkContactsPermission()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        startListeningForIncomingCalls()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        incomingCallListener?.remove()
+        incomingCallListener = null
+    }
+
+    private fun startListeningForIncomingCalls() {
+        val myUid = authRepository.currentUser()?.uid ?: return
+        incomingCallListener = firebaseRepository.listenForIncomingCalls(myUid) { session ->
+            runOnUiThread {
+                openIncomingCallScreen(session)
+            }
+        }
+    }
+
+    private fun openIncomingCallScreen(session: CallSession) {
+        val intent = Intent(this, IncomingCallActivity::class.java).apply {
+            putExtra("callId", session.callId)
+            putExtra("callerName", session.callerName)
+            putExtra("callerNumber", session.callerNumber)
+            putExtra("callerUid", session.callerUid)
+        }
+        startActivity(intent)
     }
 
     private fun observeContacts() {
