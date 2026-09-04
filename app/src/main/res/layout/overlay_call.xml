@@ -5,26 +5,32 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_call_gradient"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:paddingStart="28dp"
+    android:paddingEnd="28dp"
+    android:paddingTop="20dp"
+    android:paddingBottom="20dp">
 
     <TextView
         android:id="@+id/tvOverlayStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="72dp"
+        android:fontFamily="sans-serif-medium"
         android:gravity="center"
+        android:letterSpacing="0.02"
         android:text="Calling..."
-        android:textColor="#DDDDDD"
+        android:textColor="#CCFFFFFF"
         android:textSize="16sp" />
 
     <TextView
         android:id="@+id/tvOverlayName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
+        android:fontFamily="sans-serif-medium"
         android:gravity="center"
         android:textColor="@android:color/white"
-        android:textSize="30sp"
+        android:textSize="32sp"
         android:textStyle="bold"
         tools:text="John Doe" />
 
@@ -32,10 +38,12 @@
         android:id="@+id/tvOverlayNumber"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="6dp"
+        android:fontFamily="sans-serif"
         android:gravity="center"
-        android:textColor="#AAAAAA"
-        android:textSize="14sp"
+        android:letterSpacing="0.03"
+        android:textColor="#99FFFFFF"
+        android:textSize="15sp"
         tools:text="+91XXXXXXXXXX" />
 
     <View
@@ -58,19 +66,22 @@
 
             <ImageButton
                 android:id="@+id/btnOverlaySpeaker"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="68dp"
+                android:layout_height="68dp"
                 android:background="@drawable/bg_circle_translucent"
                 android:contentDescription="Speaker"
+                android:elevation="2dp"
+                android:padding="18dp"
                 android:src="@android:drawable/ic_lock_silent_mode_off" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif"
                 android:text="Speaker"
-                android:textColor="@android:color/white"
-                android:textSize="12sp" />
+                android:textColor="#E6FFFFFF"
+                android:textSize="12.5sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -82,19 +93,22 @@
 
             <ImageButton
                 android:id="@+id/btnOverlayMore"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="68dp"
+                android:layout_height="68dp"
                 android:background="@drawable/bg_circle_translucent"
                 android:contentDescription="More"
+                android:elevation="2dp"
+                android:padding="18dp"
                 android:src="@android:drawable/ic_menu_more" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif"
                 android:text="More"
-                android:textColor="@android:color/white"
-                android:textSize="12sp" />
+                android:textColor="#E6FFFFFF"
+                android:textSize="12.5sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -106,19 +120,22 @@
 
             <ImageButton
                 android:id="@+id/btnOverlayMute"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="68dp"
+                android:layout_height="68dp"
                 android:background="@drawable/bg_circle_translucent"
                 android:contentDescription="Mute"
+                android:elevation="2dp"
+                android:padding="18dp"
                 android:src="@android:drawable/ic_btn_speak_now" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif"
                 android:text="Mute"
-                android:textColor="@android:color/white"
-                android:textSize="12sp" />
+                android:textColor="#E6FFFFFF"
+                android:textSize="12.5sp" />
         </LinearLayout>
 
     </LinearLayout>
@@ -126,8 +143,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginTop="22dp"
+        android:layout_marginBottom="28dp"
         android:orientation="horizontal"
         android:weightSum="3">
 
@@ -140,19 +157,22 @@
 
             <ImageButton
                 android:id="@+id/btnOverlayHide"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="68dp"
+                android:layout_height="68dp"
                 android:background="@drawable/bg_circle_translucent"
                 android:contentDescription="Hide"
+                android:elevation="2dp"
+                android:padding="20dp"
                 android:src="@android:drawable/arrow_down_float" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif"
                 android:text="Hide"
-                android:textColor="@android:color/white"
-                android:textSize="12sp" />
+                android:textColor="#E6FFFFFF"
+                android:textSize="12.5sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -164,19 +184,22 @@
 
             <ImageButton
                 android:id="@+id/btnOverlayEnd"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="68dp"
+                android:layout_height="68dp"
                 android:background="@drawable/bg_circle_red"
                 android:contentDescription="End call"
+                android:elevation="4dp"
+                android:padding="18dp"
                 android:src="@android:drawable/ic_menu_close_clear_cancel" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif-medium"
                 android:text="End"
                 android:textColor="@android:color/white"
-                android:textSize="12sp" />
+                android:textSize="12.5sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -188,19 +211,22 @@
 
             <ImageButton
                 android:id="@+id/btnOverlayKeypad"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="68dp"
+                android:layout_height="68dp"
                 android:background="@drawable/bg_circle_translucent"
                 android:contentDescription="Keypad"
+                android:elevation="2dp"
+                android:padding="18dp"
                 android:src="@android:drawable/ic_dialog_dialer" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif"
                 android:text="Keypad"
-                android:textColor="@android:color/white"
-                android:textSize="12sp" />
+                android:textColor="#E6FFFFFF"
+                android:textSize="12.5sp" />
         </LinearLayout>
 
     </LinearLayout>
