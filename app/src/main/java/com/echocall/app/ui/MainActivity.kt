@@ -56,13 +56,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val requestCallPermission = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
+    private val requestCallPermissions = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        val allGranted = results.values.all { it }
+        if (allGranted) {
             pendingCallContact?.let { dialSimCallWithOverlay(it) }
         } else {
-            Toast.makeText(this, "Call permission needed to dial", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Call and phone state permission needed", Toast.LENGTH_SHORT).show()
         }
         pendingCallContact = null
     }
@@ -245,11 +246,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestSimCall(contact: Contact) {
-        val granted = ContextCompat.checkSelfPermission(
+        val callGranted = ContextCompat.checkSelfPermission(
             this, Manifest.permission.CALL_PHONE
         ) == PackageManager.PERMISSION_GRANTED
 
-        if (granted) {
+        val phoneStateGranted = ContextCompat.checkSelfPermission(
+            this, Manifest.permission.READ_PHONE_STATE
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (callGranted && phoneStateGranted) {
             dialSimCallWithOverlay(contact)
         } else {
             pendingCallContact = contact
