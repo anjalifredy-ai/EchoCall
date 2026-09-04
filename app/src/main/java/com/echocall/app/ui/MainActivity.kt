@@ -4,7 +4,9 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -20,6 +22,7 @@ import com.echocall.app.data.model.CallSession
 import com.echocall.app.data.repository.AuthRepository
 import com.echocall.app.data.repository.ContactRepository
 import com.echocall.app.data.repository.FirebaseRepository
+import com.echocall.app.service.CallOverlayService
 import com.echocall.app.ui.adapter.ContactAdapter
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -40,8 +43,7 @@ class MainActivity : AppCompatActivity() {
     private val firebaseRepository = FirebaseRepository()
     private val authRepository = AuthRepository()
     private var incomingCallListener: ListenerRegistration? = null
-    private var pendingCallNumber: String? = null
-    private var currentTab = TAB_DIAL
+    private var pendingCallContact: Contact? = null
     private var contactsJob: Job? = null
 
     private val requestContactsPermission = registerForActivityResult(
@@ -58,11 +60,11 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            pendingCallNumber?.let { dialSimCall(it) }
+            pendingCallContact?.let { dialSimCallWithOverlay(it) }
         } else {
             Toast.makeText(this, "Call permission needed to dial", Toast.LENGTH_SHORT).show()
         }
-        pendingCallNumber = null
+        pendingCallContact = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,6 +102,7 @@ class MainActivity : AppCompatActivity() {
         switchTab(TAB_DIAL)
         updateFcmToken()
         checkContactsPermission()
+        requestOverlayPermissionIfNeeded()
     }
 
     override fun onStart() {
@@ -113,8 +116,21 @@ class MainActivity : AppCompatActivity() {
         incomingCallListener = null
     }
 
+    private fun requestOverlayPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            try {
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+                startActivity(intent)
+                Toast.makeText(this, "Allow 'Display over other apps' for call overlay", Toast.LENGTH_LONG).show()
+            } catch (_: Exception) {
+            }
+        }
+    }
+
     private fun switchTab(tab: Int) {
-        currentTab = tab
         contactsJob?.cancel()
 
         val flow = when (tab) {
@@ -224,29 +240,38 @@ class MainActivity : AppCompatActivity() {
             }
             startActivity(intent)
         } else {
-            requestSimCall(contact.phoneNumber)
+            requestSimCall(contact)
         }
     }
 
-    private fun requestSimCall(phoneNumber: String) {
+    private fun requestSimCall(contact: Contact) {
         val granted = ContextCompat.checkSelfPermission(
             this, Manifest.permission.CALL_PHONE
         ) == PackageManager.PERMISSION_GRANTED
 
         if (granted) {
-            dialSimCall(phoneNumber)
+            dialSimCallWithOverlay(contact)
         } else {
-            pendingCallNumber = phoneNumber
+            pendingCallContact = contact
             requestCallPermission.launch(Manifest.permission.CALL_PHONE)
         }
     }
 
-    private fun dialSimCall(phoneNumber: String) {
+    private fun dialSimCallWithOverlay(contact: Contact) {
         try {
-            val intent = Intent(Intent.ACTION_CALL).apply {
-                data = Uri.parse("tel:$phoneNumber")
+            val callIntent = Intent(Intent.ACTION_CALL).apply {
+                data = Uri.parse("tel:${contact.phoneNumber}")
             }
-            startActivity(intent)
+            startActivity(callIntent)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
+                val overlayIntent = Intent(this, CallOverlayService::class.java).apply {
+                    putExtra("callerName", contact.name)
+                    putExtra("callerNumber", contact.phoneNumber)
+                    putExtra("status", "Calling...")
+                }
+                startService(overlayIntent)
+            }
         } catch (e: Exception) {
             Toast.makeText(this, "Unable to place call", Toast.LENGTH_SHORT).show()
         }
