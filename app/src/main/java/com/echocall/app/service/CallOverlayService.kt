@@ -4,7 +4,9 @@ import android.app.Service
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.media.AudioManager
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.telecom.TelecomManager
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -20,6 +22,22 @@ class CallOverlayService : Service() {
     private var overlayView: View? = null
     private var isSpeakerOn = false
     private var isMicMuted = false
+    private var callStateListener: SimCallStateListener? = null
+    private var audioManager: AudioManager? = null
+
+    private var secondsElapsed = 0
+    private var isCallConnected = false
+    private val handler = Handler(Looper.getMainLooper())
+    private val timerRunnable = object : Runnable {
+        override fun run() {
+            secondsElapsed++
+            val mins = secondsElapsed / 60
+            val secs = secondsElapsed % 60
+            overlayView?.findViewById<TextView>(R.id.tvOverlayStatus)?.text =
+                String.format("%02d:%02d", mins, secs)
+            handler.postDelayed(this, 1000)
+        }
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
@@ -33,7 +51,35 @@ class CallOverlayService : Service() {
         val status = intent?.getStringExtra("status") ?: "Calling..."
 
         showOverlay(callerName, callerNumber, status)
+        startCallStateTracking()
         return START_NOT_STICKY
+    }
+
+    private fun startCallStateTracking() {
+        if (callStateListener != null) return
+        callStateListener = SimCallStateListener(this) { state ->
+            handler.post {
+                when (state) {
+                    "Connected" -> {
+                        if (!isCallConnected) {
+                            isCallConnected = true
+                            secondsElapsed = 0
+                            handler.post(timerRunnable)
+                        }
+                    }
+                    "Call ended" -> {
+                        handler.removeCallbacks(timerRunnable)
+                        hideOverlay()
+                    }
+                    else -> {
+                        if (!isCallConnected) {
+                            overlayView?.findViewById<TextView>(R.id.tvOverlayStatus)?.text = state
+                        }
+                    }
+                }
+            }
+        }
+        callStateListener?.start()
     }
 
     private fun showOverlay(name: String, number: String, status: String) {
@@ -41,6 +87,9 @@ class CallOverlayService : Service() {
             updateOverlay(name, number, status)
             return
         }
+
+        audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+        audioManager?.mode = AudioManager.MODE_IN_COMMUNICATION
 
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         val inflater = LayoutInflater.from(this)
@@ -74,15 +123,13 @@ class CallOverlayService : Service() {
 
         btnSpeaker?.setOnClickListener {
             isSpeakerOn = !isSpeakerOn
-            val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
-            audioManager.isSpeakerphoneOn = isSpeakerOn
+            audioManager?.isSpeakerphoneOn = isSpeakerOn
             btnSpeaker.alpha = if (isSpeakerOn) 1.0f else 0.5f
         }
 
         btnMute?.setOnClickListener {
             isMicMuted = !isMicMuted
-            val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
-            audioManager.isMicrophoneMute = isMicMuted
+            audioManager?.isMicrophoneMute = isMicMuted
             btnMute.alpha = if (isMicMuted) 1.0f else 0.5f
         }
 
@@ -95,15 +142,19 @@ class CallOverlayService : Service() {
             telecomManager.endCall()
         } catch (_: Exception) {
         }
-        stopSelf()
+        hideOverlay()
     }
 
     private fun hideOverlay() {
+        handler.removeCallbacks(timerRunnable)
         try {
             overlayView?.let { windowManager?.removeView(it) }
         } catch (_: Exception) {
         }
         overlayView = null
+        audioManager?.mode = AudioManager.MODE_NORMAL
+        callStateListener?.stop()
+        callStateListener = null
         stopSelf()
     }
 
@@ -115,11 +166,14 @@ class CallOverlayService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        handler.removeCallbacks(timerRunnable)
         try {
             overlayView?.let { windowManager?.removeView(it) }
         } catch (_: Exception) {
         }
         overlayView = null
+        audioManager?.mode = AudioManager.MODE_NORMAL
+        callStateListener?.stop()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
