@@ -261,6 +261,7 @@ class MainActivity : AppCompatActivity() {
             requestCallPermissions.launch(
                 arrayOf(Manifest.permission.CALL_PHONE, Manifest.permission.READ_PHONE_STATE)
             )
+        }
     }
 
     private fun dialSimCallWithOverlay(contact: Contact) {
